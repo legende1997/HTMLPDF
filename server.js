@@ -1,6 +1,5 @@
 const express = require('express');
-const puppeteer = require('puppeteer-core');
-const chromium = require('@sparticuz/chromium');
+const puppeteer = require('puppeteer');
 const fetch = require('node-fetch');
 const { PDFDocument } = require('pdf-lib');
 
@@ -18,7 +17,6 @@ app.get('/', (req, res) => {
   res.send('Servidor HTML/ZPL para PDF funcionando!');
 });
 
-// Rota existente — HTML para PDF
 app.post('/convert', async (req, res) => {
   const { html } = req.body;
   if (!html) return res.status(400).json({ error: 'Campo html é obrigatório' });
@@ -26,10 +24,13 @@ app.post('/convert', async (req, res) => {
   let browser;
   try {
     browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
+      headless: 'new',
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+      ],
     });
 
     const page = await browser.newPage();
@@ -55,13 +56,11 @@ app.post('/convert', async (req, res) => {
   }
 });
 
-// Nova rota — ZPL para PDF
 app.post('/convert-zpl', async (req, res) => {
   const { zpl } = req.body;
   if (!zpl) return res.status(400).json({ error: 'Campo zpl é obrigatório' });
 
   try {
-    // Envia ZPL para a API Labelary e recebe PNG
     const labelaryResponse = await fetch(
       'https://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/',
       {
@@ -77,11 +76,9 @@ app.post('/convert-zpl', async (req, res) => {
 
     const pngBuffer = await labelaryResponse.buffer();
 
-    // Converte PNG para PDF usando pdf-lib
     const pdfDoc = await PDFDocument.create();
     const pngImage = await pdfDoc.embedPng(pngBuffer);
 
-    // Tamanho 4x6 polegadas em pontos (1 polegada = 72 pontos)
     const page = pdfDoc.addPage([4 * 72, 6 * 72]);
     page.drawImage(pngImage, {
       x: 0,
@@ -103,9 +100,8 @@ app.post('/convert-zpl', async (req, res) => {
   }
 });
 
-// Nova rota — Mesclar PDFs (para usar depois)
 app.post('/merge-pdfs', async (req, res) => {
-  const { pdfs } = req.body; // array de base64
+  const { pdfs } = req.body;
   if (!pdfs || !Array.isArray(pdfs) || pdfs.length < 2) {
     return res.status(400).json({ error: 'Enviar array com pelo menos 2 PDFs em base64' });
   }
