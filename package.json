@@ -1,13 +1,13 @@
 {
   "name": "html-to-pdf",
   "version": "1.0.0",
-  "description": "Servidor para converter HTML em PDF",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "puppeteer": "^21.0.0"
+    "@sparticuz/chromium": "^123.0.0",
+    "puppeteer-core": "^22.0.0"
   }
 }
