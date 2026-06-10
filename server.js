@@ -56,7 +56,7 @@ app.post('/convert-zpl', async (req, res) => {
   try {
     // Envia ZPL para a API Labelary e recebe PNG
     const labelaryResponse = await fetch(
-      'http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/',
+      'https://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
